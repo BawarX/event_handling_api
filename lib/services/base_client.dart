@@ -1,72 +1,66 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:dartz/dartz.dart';
 import 'package:event_handling/services/app_exception.dart';
 import 'package:http/http.dart' as http;
 
 class BaseClient {
-  static const int TIME_OUT_DURATION = 20;
-  //GET
-  Future<dynamic> get(String baseUrl, String api) async {
+  static const int timeOutDuration = 20;
+  
+  Future<Either<AppException, String>> get(String baseUrl, String api) async {
     var uri = Uri.parse(baseUrl + api);
     try {
       var response =
-          await http.get(uri).timeout(Duration(seconds: TIME_OUT_DURATION));
-      return _processResponse(response);
+          await http.get(uri).timeout(const Duration(seconds: timeOutDuration));
+      return Right(_processResponse(response) as String);
     } on SocketException {
-      throw FetchDataException('No Internet connection', uri.toString());
+      return Left(
+          throw FetchDataException('No Internet connection', uri.toString())
+      );
     } on TimeoutException {
-      throw ApiNotRespondingException(
-          'API not responded in time', uri.toString());
+      Left(
+        throw ApiNotRespondingException(
+          'API not responded in time', uri.toString())
+      );
+    } on Exception{
+      Left(
+          throw UnknownException('unkown exception')
+      );
+    
     }
   }
 
-  //POST
-  Future<dynamic> post(String baseUrl, String api, dynamic payloadObj) async {
-    var uri = Uri.parse(baseUrl + api);
-    var payload = json.encode(payloadObj);
-    try {
-      var response = await http
-          .post(uri, body: payload)
-          .timeout(Duration(seconds: TIME_OUT_DURATION));
-      return _processResponse(response);
-    } on SocketException {
-      throw FetchDataException('No Internet connection', uri.toString());
-    } on TimeoutException {
-      throw ApiNotRespondingException(
-          'API not responded in time', uri.toString());
-    }
-  }
-
-  //DELETE
-  //OTHER
-
-  dynamic _processResponse(http.Response response) {
+  Either<AppException,String> _processResponse(http.Response response) {
     switch (response.statusCode) {
       case 200:
         var responseJson = utf8.decode(response.bodyBytes);
-        return responseJson;
-        break;
-      case 201:
-        var responseJson = utf8.decode(response.bodyBytes);
-        return responseJson;
-        break;
+         return Right(responseJson);
       case 400:
-        throw BadRequestException(
-            utf8.decode(response.bodyBytes), response.request!.url.toString());
-      case 401:
+      return left(
+          throw BadRequestException(
+            utf8.decode(response.bodyBytes), response.request!.url.toString())
+      );
       case 403:
-        throw UnAuthorizedException(
-            utf8.decode(response.bodyBytes), response.request!.url.toString());
+      return Left(
+          throw UnAuthorizedException(
+            utf8.decode(response.bodyBytes), response.request!.url.toString())
+      );
+      
       case 422:
-        throw BadRequestException(
-            utf8.decode(response.bodyBytes), response.request!.url.toString());
+      return Left(
+         throw BadRequestException(
+            utf8.decode(response.bodyBytes), response.request!.url.toString())
+      );
+       
       case 500:
       default:
-        throw FetchDataException(
+      return Left(
+          throw FetchDataException(
             'Error occured with code : ${response.statusCode}',
-            response.request!.url.toString());
+            response.request!.url.toString())
+      );
+      
     }
   }
 }

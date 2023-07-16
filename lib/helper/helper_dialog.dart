@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class DialogHelper {
-  //show error dialog
   static void showErroDialog(
       {String title = 'Error', String? description = 'Something went wrong'}) {
     Get.dialog(
@@ -22,7 +21,7 @@ class DialogHelper {
                 onPressed: () {
                   if (Get.isDialogOpen!) Get.back();
                 },
-                child: Text('Okay'),
+                child: const Text('Okay'),
               ),
             ],
           ),
@@ -39,8 +38,8 @@ class DialogHelper {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 8),
+              const CircularProgressIndicator(),
+              const SizedBox(height: 8),
               Text(message ?? 'Loading...'),
             ],
           ),
@@ -48,8 +47,6 @@ class DialogHelper {
       ),
     );
   }
-
-  //hide loading
   static void hideLoading() {
     if (Get.isDialogOpen!) Get.back();
   }

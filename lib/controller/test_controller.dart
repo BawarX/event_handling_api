@@ -7,8 +7,9 @@ class TestController extends BaseController {
     var response = await BaseClient()
         .get('https://jsonplaceholder.typicode.com', '/todos/1')
         .catchError(handleError);
+      
     if (response == null) return;
     hideLoading();
-    print(response);
+   print(response);
   }
 }

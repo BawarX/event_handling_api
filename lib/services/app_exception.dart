@@ -25,3 +25,8 @@ class UnAuthorizedException extends AppException {
   UnAuthorizedException([String? message, String? url])
       : super(message, 'UnAuthorized request', url);
 }
+
+class UnknownException extends AppException {
+  UnknownException([String? message, String? url])
+      : super(message, 'unkown request', url);
+}
